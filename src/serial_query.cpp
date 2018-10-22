@@ -54,7 +54,7 @@ namespace create {
       --packetByte;
     } else if (packetID < maxPacketID) {
       // New packet
-      data->getPacket(packetID)->setDataToValidate(packetData);
+      data->getPacket(packetID)->setTempData(packetData);
       packetData = 0;
       ++packetID;
       packetByte = data->getPacket(packetID)->nbytes - 1;

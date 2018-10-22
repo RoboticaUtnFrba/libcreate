@@ -258,7 +258,7 @@ namespace create {
     // Update pose
     pose.x += deltaX;
     pose.y += deltaY;
-    pose.yaw += deltaYaw;
+    pose.yaw = util::normalizeAngle(pose.yaw + deltaYaw);
 
     prevOnDataTime = curTime;
 

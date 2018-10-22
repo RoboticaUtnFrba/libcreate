@@ -83,8 +83,6 @@ namespace create {
 
       Matrix poseCovar;
 
-      float measuredLeftVel;
-      float measuredRightVel;
       float requestedLeftVel;
       float requestedRightVel;
 
@@ -106,7 +104,7 @@ namespace create {
        *
        * \param model the type of the robot. See RobotModel to determine the value for your robot.
         */
-      Create(RobotModel model = RobotModel::CREATE_2);
+      Create(RobotModel = RobotModel::CREATE_2);
 
       /**
        * \brief Attempts to establish serial connection to Create.
@@ -192,14 +190,6 @@ namespace create {
        * \return true if successful, false otherwise
        */
       bool driveWheels(const float& leftWheel, const float& rightWheel);
-
-      /**
-       * \brief Set the direct  for the left and right wheels.
-       * \param leftWheel pwm in the range [-1, 1]
-       * \param rightWheel pwm in the range [-1, 1]
-       * \return true if successful, false otherwise
-       */
-      bool driveWheelsPwm(const float& leftWheel, const float& rightWheel);
 
       /**
        * \brief Set the forward and angular velocity of Create.
@@ -332,9 +322,14 @@ namespace create {
       bool playSong(const uint8_t& songNumber) const;
 
       /**
-       * \return true if a left or right wheeldrop is detected, false otherwise.
+       * \return true if left wheeldrop is detected, false otherwise.
        */
-      bool isWheeldrop() const;
+      bool isLeftWheel() const;
+
+      /**
+       * \return true if right wheeldrop is detected, false otherwise.
+       */
+      bool isRightWheel() const;
 
       /**
        * \return true if left bumper is pressed, false otherwise.
@@ -352,9 +347,24 @@ namespace create {
       bool isWall() const;
 
       /**
-       * \return true if there are any cliff detections, false otherwise.
+       * \return true if left cliff detection, false otherwise.
        */
-      bool isCliff() const;
+      bool isCliffLeft() const;
+
+      /**
+       * \return true if front left cliff detection, false otherwise.
+       */
+      bool isCliffFrontLeft() const;
+
+      /**
+       * \return true if right cliff detection, false otherwise.
+       */
+      bool isCliffRight() const;
+
+      /**
+       * \return true if front right cliff detection, false otherwise.
+       */
+      bool isCliffFrontRight() const;
 
       /**
        * \return true if there is a virtual wall signal is being received.

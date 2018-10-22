@@ -77,7 +77,7 @@ namespace create {
           packetBytes += byteRead;
         }
         if (numDataBytesRead >= expectedNumDataBytes) {
-          data->getPacket(packetID)->setDataToValidate(packetBytes);
+          data->getPacket(packetID)->setTempData(packetBytes);
           if (numBytesRead >= expectedNumBytes)
             readState = READ_CHECKSUM;
           else

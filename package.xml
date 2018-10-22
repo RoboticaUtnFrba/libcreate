@@ -1,30 +1,19 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>libcreate</name>
-  <version>1.6.1</version>
-  <description>C++ library for interfacing with iRobot's Create 1 and Create 2</description>
+  <version>1.1.0</version>
+  <description>C++ driver for iRobot's Create 1 and 2</description>
 
-  <maintainer email="jperron@sfu.ca">Jacob Perron</maintainer>
+  <maintainer email="emiliano.borghi@gmail.com">Emiliano Borghi</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://wiki.ros.org/libcreate</url>
-  <url type="repository">https://github.com/AutonomyLab/libcreate</url>
-  <url type="bugtracker">https://github.com/AutonomyLab/libcreate/issues</url>
-
+  
   <author email="jperron@sfu.ca">Jacob Perron</author>
 
-  <buildtool_depend>cmake</buildtool_depend>
-
-  <depend>boost</depend>
-
-  <exec_depend>catkin</exec_depend>
-
-  <doc_depend>doxygen</doc_depend>
-
-  <test_depend>gtest</test_depend>
+  <buildtool_depend>catkin</buildtool_depend>
 
   <export>
-    <build_type>cmake</build_type>
   </export>
 </package>
