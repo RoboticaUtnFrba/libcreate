@@ -27,8 +27,6 @@ namespace create {
     checkLED = 0;
     powerLED = 0;
     powerLEDIntensity = 0;
-    prevTicksLeft = 0;
-    prevTicksRight = 0;
     totalLeftDist = 0.0;
     totalRightDist = 0.0;
     firstOnData = true;
@@ -91,121 +89,41 @@ namespace create {
 
   void Create::onData() {
     if (firstOnData) {
-      if (model.getVersion() >= V_3) {
-        // Initialize tick counts
-        prevTicksLeft = GET_DATA(ID_LEFT_ENC);
-        prevTicksRight = GET_DATA(ID_RIGHT_ENC);
-      }
-      prevOnDataTime = util::getTimestamp();
+      // Initialize tick counts
+      odometry = create::Odometry(GET_DATA(ID_LEFT_ENC), GET_DATA(ID_RIGHT_ENC));
+      odometry.setTime(util::getTimestamp() / 1000000.0);
+      odometry.setWheelSeparation(model.getAxleLength());
+      odometry.setTicksPerMeter(util::V_3_TICKS_PER_REV);
+      odometry.setEncoderRange(0, util::V_3_MAX_ENCODER_TICKS);
       firstOnData = false;
     }
+    odometry.updateLeftWheel(GET_DATA(ID_LEFT_ENC));
+    odometry.updateRightWheel(GET_DATA(ID_RIGHT_ENC));
 
-    // Get current time
-    util::timestamp_t curTime = util::getTimestamp();
-    float dt = (curTime - prevOnDataTime) / 1000000.0;
-    float deltaDist, deltaX, deltaY, deltaYaw, leftWheelDist, rightWheelDist, wheelDistDiff;
-
-    // Protocol versions 1 and 2 use distance and angle fields for odometry
-    int16_t angleField;
-    if (model.getVersion() <= V_2) {
-      // This is a standards compliant way of doing unsigned to signed conversion
-      uint16_t distanceRaw = GET_DATA(ID_DISTANCE);
-      int16_t distance;
-      std::memcpy(&distance, &distanceRaw, sizeof(distance));
-      deltaDist = distance / 1000.0; // mm -> m
-
-      // Angle is processed differently in versions 1 and 2
-      uint16_t angleRaw = GET_DATA(ID_ANGLE);
-      std::memcpy(&angleField, &angleRaw, sizeof(angleField));
-    }
-
-    if (model.getVersion() == V_1) {
-      wheelDistDiff = 2.0 * angleField / 1000.0;
-      leftWheelDist = deltaDist - (wheelDistDiff / 2.0);
-      rightWheelDist = deltaDist + (wheelDistDiff / 2.0);
-      deltaYaw = wheelDistDiff / model.getAxleLength();
-    } else if (model.getVersion() == V_2) {
-      /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-       * Certain older Creates have major problems with odometry                   *
-       * http://answers.ros.org/question/31935/createroomba-odometry/              *
-       *                                                                           *
-       * All Creates have an issue with rounding of the angle field, which causes  *
-       * major errors to accumulate in the odometry yaw.                           *
-       * http://wiki.tekkotsu.org/index.php/Create_Odometry_Bug                    *
-       * https://github.com/AutonomyLab/create_autonomy/issues/28                  *
-       *                                                                           *
-       * TODO: Consider using velocity command as substitute for pose estimation   *
-       * to mitigate both of these problems.                                       *
-       * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-      deltaYaw = angleField * (util::PI / 180.0); // D2R
-      wheelDistDiff = model.getAxleLength() * deltaYaw;
-      leftWheelDist = deltaDist - (wheelDistDiff / 2.0);
-      rightWheelDist = deltaDist + (wheelDistDiff / 2.0);
-    } else if (model.getVersion() >= V_3) {
-      // Get cumulative ticks (wraps around at 65535)
-      uint16_t totalTicksLeft = GET_DATA(ID_LEFT_ENC);
-      uint16_t totalTicksRight = GET_DATA(ID_RIGHT_ENC);
-      // Compute ticks since last update
-      int ticksLeft = totalTicksLeft - prevTicksLeft;
-      int ticksRight = totalTicksRight - prevTicksRight;
-      prevTicksLeft = totalTicksLeft;
-      prevTicksRight = totalTicksRight;
-
-      // Handle wrap around
-      if (fabs(ticksLeft) > 0.9 * util::V_3_MAX_ENCODER_TICKS) {
-        ticksLeft = (ticksLeft % util::V_3_MAX_ENCODER_TICKS) + 1;
-      }
-      if (fabs(ticksRight) > 0.9 * util::V_3_MAX_ENCODER_TICKS) {
-        ticksRight = (ticksRight % util::V_3_MAX_ENCODER_TICKS) + 1;
-      }
-
-      // Compute distance travelled by each wheel
-      leftWheelDist = (ticksLeft / util::V_3_TICKS_PER_REV)
-          * model.getWheelDiameter() * util::PI;
-      rightWheelDist = (ticksRight / util::V_3_TICKS_PER_REV)
-          * model.getWheelDiameter() * util::PI;
-      deltaDist = (rightWheelDist + leftWheelDist) / 2.0;
-
-      wheelDistDiff = rightWheelDist - leftWheelDist;
-      deltaYaw = wheelDistDiff / model.getAxleLength();
-    }
-
-    // Moving straight
-    if (fabs(wheelDistDiff) < util::EPS) {
-      deltaX = deltaDist * cos(pose.yaw);
-      deltaY = deltaDist * sin(pose.yaw);
-    } else {
-      float turnRadius = (model.getAxleLength() / 2.0) * (leftWheelDist + rightWheelDist) / wheelDistDiff;
-      deltaX = turnRadius * (sin(pose.yaw + deltaYaw) - sin(pose.yaw));
-      deltaY = -turnRadius * (cos(pose.yaw + deltaYaw) - cos(pose.yaw));
-    }
-
-    totalLeftDist += leftWheelDist;
-    totalRightDist += rightWheelDist;
-
-    if (fabs(dt) > util::EPS) {
-      vel.x = deltaDist / dt;
-      vel.y = 0.0;
-      vel.yaw = deltaYaw / dt;
-    } else {
-      vel.x = 0.0;
-      vel.y = 0.0;
-      vel.yaw = 0.0;
-    }
-
+    odometry.updatePose(util::getTimestamp() / 1000000.0);
+    PoseTwist poseTwist = odometry.getPose();
+    pose.x = poseTwist.x;
+    pose.y = poseTwist.y;
+    pose.yaw = poseTwist.theta;
+    vel.x = poseTwist.xVel;
+    vel.y = poseTwist.yVel;
+    vel.yaw = poseTwist.thetaVel;
+  
     // Update covariances
     // Ref: "Introduction to Autonomous Mobile Robots" (Siegwart 2004, page 189)
-    float kr = 1.0; // TODO: Perform experiments to find these nondeterministic parameters
-    float kl = 1.0;
-    float cosYawAndHalfDelta = cos(pose.yaw + (deltaYaw / 2.0)); // deltaX?
-    float sinYawAndHalfDelta = sin(pose.yaw + (deltaYaw / 2.0)); // deltaY?
-    float distOverTwoWB = deltaDist / (model.getAxleLength() * 2.0);
+    const float kr = 1.0; // TODO: Perform experiments to find these nondeterministic parameters
+    const float kl = 1.0;
+    const double deltaYaw = odometry.getDeltaOrientation();
+    const double deltaDist = odometry.getDeltaDistance();
+    const float cosYawAndHalfDelta = cos(pose.yaw + (deltaYaw / 2.0)); // deltaX?
+    const float sinYawAndHalfDelta = sin(pose.yaw + (deltaYaw / 2.0)); // deltaY?
+    const float distOverTwoWB = deltaDist / (model.getAxleLength() * 2.0);
 
     Matrix invCovar(2, 2);
-    invCovar(0, 0) = kr * fabs(rightWheelDist);
+    invCovar(0, 0) = kr * fabs(odometry.getRightWheelDistance());
     invCovar(0, 1) = 0.0;
     invCovar(1, 0) = 0.0;
-    invCovar(1, 1) = kl * fabs(leftWheelDist);
+    invCovar(1, 1) = kl * fabs(odometry.getLeftWheelDistance());
 
     Matrix Finc(3, 2);
     Finc(0, 0) = (cosYawAndHalfDelta / 2.0) - (distOverTwoWB * sinYawAndHalfDelta);
@@ -254,13 +172,6 @@ namespace create {
     pose.covariance[6] = poseCovar(2, 0);
     pose.covariance[7] = poseCovar(2, 1);
     pose.covariance[8] = poseCovar(2, 2);
-
-    // Update pose
-    pose.x += deltaX;
-    pose.y += deltaY;
-    pose.yaw += deltaYaw;
-
-    prevOnDataTime = curTime;
 
     // Make user registered callbacks, if any
     // TODO
@@ -687,6 +598,32 @@ namespace create {
       CERR("[create::Create] ", "Virtual Wall sensor not supported!");
       return false;
     }
+  }
+
+  bool Create::isOvercurrent(uint8_t mask) const {
+    if (data->isValidPacketID(ID_OVERCURRENTS)) {
+      return (GET_DATA(ID_OVERCURRENTS) & mask) != 0;
+    }
+    else {
+      CERR("[create::Create] ", "Overcurrent sensor not supported!");
+      return false;
+    }
+  }
+
+  bool Create::isLeftWheelOvercurrent() const {
+    return isOvercurrent(0x10);
+  }
+
+  bool Create::isRightWheelOvercurrent() const {
+    return isOvercurrent(0x08);
+  }
+
+  bool Create::isMainBrushOvercurrent() const {
+    return isOvercurrent(0x04);
+  }
+
+  bool Create::isSideBrushOvercurrent() const {
+    return isOvercurrent(0x01);
   }
 
   uint8_t Create::getDirtDetect() const {

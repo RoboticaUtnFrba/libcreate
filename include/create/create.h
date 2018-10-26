@@ -42,6 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "create/data.h"
 #include "create/types.h"
 #include "create/util.h"
+#include "create/odometry.h"
 
 namespace create {
   class Create {
@@ -74,8 +75,7 @@ namespace create {
       create::Pose pose;
       create::Vel vel;
 
-      uint32_t prevTicksLeft;
-      uint32_t prevTicksRight;
+      create::Odometry odometry;
       float totalLeftDist;
       float totalRightDist;
       bool firstOnData;
@@ -372,19 +372,27 @@ namespace create {
       bool isVirtualWall() const;
 
       /**
-       * \todo Not implemented yet (https://github.com/AutonomyLab/libcreate/issues/8)
-       * \return true if drive motors are overcurrent.
+       * \brief Return if there is overcurrent on the requested motor as uint8_t mask.
+       * \return true if the motor is overcurrent.
        */
-      bool isWheelOvercurrent() const;
+      bool isOvercurrent(uint8_t mask) const;
 
       /**
-       * \todo Not implemented yet (https://github.com/AutonomyLab/libcreate/issues/8)
+       * \return true if the left motor is overcurrent.
+       */
+      bool isLeftWheelOvercurrent() const;
+
+      /**
+       * \return true if the right motor is overcurrent.
+       */
+      bool isRightWheelOvercurrent() const;
+
+      /**
        * \return true if main brush motor is overcurrent.
        */
       bool isMainBrushOvercurrent() const;
 
       /**
-       * \todo Not implemented yet (https://github.com/AutonomyLab/libcreate/issues/8)
        * \return true if side brush motor is overcurrent.
        */
       bool isSideBrushOvercurrent() const;
