@@ -24,6 +24,8 @@ add_library(create
   src/data.cpp
   src/packet.cpp
   src/types.cpp
+  src/encoder.cpp
+  src/odometry.cpp
 )
 
 if(THREADS_HAVE_PTHREAD_ARG)
