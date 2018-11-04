@@ -27,10 +27,11 @@ private:
     double deltaTheta;
     double wheelDistDiff;
     bool isStdCalculation;
+    bool useGeometricTheta;
 public:
-    Odometry(bool _useStdCalculation = true);
-    Odometry(uint16_t _leftCount, uint16_t _rightCount, bool _useStdCalculation = true);
-    void updatePose(double _newTime);
+    Odometry(bool _useStdCalculation = true, bool _useGeometricTheta = false);
+    Odometry(uint16_t _leftCount, uint16_t _rightCount, bool _useStdCalculation = true, bool _useGeometricTheta = false);
+    void updatePose(double _newTime, double _deltaTheta);
     void setTime(double _newTime);
     void setWheelSeparation(double _wheelSeparation);
     void setTicksPerMeter(double _ticks);

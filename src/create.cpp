@@ -90,7 +90,8 @@ namespace create {
   void Create::onData() {
     if (firstOnData) {
       // Initialize tick counts
-      odometry = create::Odometry(GET_DATA(ID_LEFT_ENC), GET_DATA(ID_RIGHT_ENC));
+      odometry = create::Odometry(GET_DATA(ID_LEFT_ENC), 
+                                  GET_DATA(ID_RIGHT_ENC));
       odometry.setTime(util::getTimestamp() / 1000000.0);
       odometry.setWheelSeparation(model.getAxleLength());
       odometry.setTicksPerMeter(util::V_3_TICKS_PER_REV);
@@ -100,7 +101,8 @@ namespace create {
     odometry.updateLeftWheel(GET_DATA(ID_LEFT_ENC));
     odometry.updateRightWheel(GET_DATA(ID_RIGHT_ENC));
 
-    odometry.updatePose(util::getTimestamp() / 1000000.0);
+    odometry.updatePose(util::getTimestamp() / 1000000.0, 
+                        util::degToRad(GET_DATA(ID_ANGLE)));
     PoseTwist poseTwist = odometry.getPose();
     pose.x = poseTwist.x;
     pose.y = poseTwist.y;
@@ -980,6 +982,16 @@ namespace create {
 
   uint64_t Create::getTotalPackets() const {
     return serial->getTotalPackets();
+  }
+
+  int16_t Create::getAngle() const {
+    if (data->isValidPacketID(ID_ANGLE)) {
+      return GET_DATA(ID_ANGLE);
+    }
+    else {
+      CERR("[create::Create] ", "Gyro sensor not supported!");
+      return false;
+    }
   }
 
 } // end namespace

@@ -645,6 +645,12 @@ namespace create {
        * \return total number of serial packets.
        */
       uint64_t getTotalPackets() const;
+
+      /**
+       * \brief Get the angle in degrees that Roomba has turned since the angle was last requested.
+       * \return The angle in degrees that Roomba has turned since the angle was last requested.
+       */
+      int16_t getAngle() const;
   };  // end Create class
 
 }  // namespace create

@@ -8,16 +8,17 @@
 
 namespace create {
 
-Odometry::Odometry(bool _useStdCalculation) {
-    Odometry(0, 0, _useStdCalculation);
+Odometry::Odometry(bool _useStdCalculation, bool _useGeometricTheta) {
+    Odometry(0, 0, _useStdCalculation, _useGeometricTheta);
 }
 
-Odometry::Odometry(uint16_t _leftCount, uint16_t _rightCount, bool _useStdCalculation) {
+Odometry::Odometry(uint16_t _leftCount, uint16_t _rightCount, bool _useStdCalculation, bool _useGeometricTheta) {
     this->leftEncoder = Encoder(_leftCount);
     this->rightEncoder = Encoder(_rightCount);
     this->pose = PoseTwist();
     this->lastTime = 0.0;
     this->isStdCalculation = _useStdCalculation;
+    this->useGeometricTheta = _useGeometricTheta;
 }
 
 void Odometry::setWheelSeparation(double _wheelSeparation) {
@@ -53,7 +54,7 @@ PoseTwist Odometry::getPose() {
     return this->pose;
 }
 
-void Odometry::updatePose(double _newTime) {
+void Odometry::updatePose(double _newTime, double _deltaTheta) {
     /**
      * Updates the pose based on the accumulated encoder ticks
      * of the two wheels. See https://chess.eecs.berkeley.edu/eecs149/documentation/differentialDrive.pdf
@@ -66,7 +67,14 @@ void Odometry::updatePose(double _newTime) {
     this->wheelDistDiff = this->rightTravel - this->leftTravel;
 
     this->deltaTravel = (this->rightTravel + this->leftTravel) / 2.0;
-    this->deltaTheta = this->wheelDistDiff / this->wheelSeparation;
+    
+    if (this->useGeometricTheta) {
+        this->deltaTheta = this->wheelDistDiff / this->wheelSeparation;
+    }
+    else {
+        this->deltaTheta = _deltaTheta;
+    }
+    
 
     double _deltaX;
     double _deltaY;
@@ -84,7 +92,7 @@ void Odometry::updatePose(double _newTime) {
 
     this->pose.yVel = 0.0;
 
-    if ((fabs(this->deltaTheta) > 1E-5) || (_deltaTime <= 0.0)) {
+    if ((fabs(this->deltaTheta) > 1E-5) || (_deltaTime > 1E-5)) {
         this->pose.xVel = this->deltaTravel / _deltaTime;
         this->pose.thetaVel = this->deltaTheta / _deltaTime;
     }
