@@ -20,7 +20,8 @@ private:
     PoseTwist pose;
     double lastTime;
     double wheelSeparation;
-    double ticksPerMeter;
+    double wheelDiameter;
+    double ticksPerRevolution;
     double leftTravel;
     double rightTravel;
     double deltaTravel;
@@ -30,11 +31,11 @@ private:
     bool useGeometricTheta;
 public:
     Odometry(bool _useStdCalculation = true, bool _useGeometricTheta = false);
-    Odometry(uint16_t _leftCount, uint16_t _rightCount, bool _useStdCalculation = true, bool _useGeometricTheta = false);
+    Odometry(uint16_t _leftCount, uint16_t _rightCount, double _startTime, bool _useStdCalculation = true, bool _useGeometricTheta = false);
     void updatePose(double _newTime, double _deltaTheta);
-    void setTime(double _newTime);
     void setWheelSeparation(double _wheelSeparation);
-    void setTicksPerMeter(double _ticks);
+    void setWheelDiameter(double _wheelDiameter);
+    void setTicksPerRevolution(double _ticks);
     void setEncoderRange(uint16_t _low, uint16_t _high);
     void updateLeftWheel(uint16_t _newCount);
     void updateRightWheel(uint16_t _newCount);

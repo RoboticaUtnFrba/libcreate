@@ -9,14 +9,14 @@
 namespace create {
 
 Odometry::Odometry(bool _useStdCalculation, bool _useGeometricTheta) {
-    Odometry(0, 0, _useStdCalculation, _useGeometricTheta);
+    Odometry(0, 0, 0.0, _useStdCalculation, _useGeometricTheta);
 }
 
-Odometry::Odometry(uint16_t _leftCount, uint16_t _rightCount, bool _useStdCalculation, bool _useGeometricTheta) {
+Odometry::Odometry(uint16_t _leftCount, uint16_t _rightCount, double _startTime, bool _useStdCalculation, bool _useGeometricTheta) {
     this->leftEncoder = Encoder(_leftCount);
     this->rightEncoder = Encoder(_rightCount);
     this->pose = PoseTwist();
-    this->lastTime = 0.0;
+    this->lastTime = _startTime;
     this->isStdCalculation = _useStdCalculation;
     this->useGeometricTheta = _useGeometricTheta;
 }
@@ -25,17 +25,17 @@ void Odometry::setWheelSeparation(double _wheelSeparation) {
     this->wheelSeparation = _wheelSeparation;
 }
 
-void Odometry::setTicksPerMeter(double _ticks) {
-    this->ticksPerMeter = _ticks;
+void Odometry::setWheelDiameter(double _wheelDiameter) {
+    this->wheelDiameter = _wheelDiameter;
+}
+
+void Odometry::setTicksPerRevolution(double _ticks) {
+    this->ticksPerRevolution = _ticks;
 }
 
 void Odometry::setEncoderRange(uint16_t _low, uint16_t _high) {
     this->leftEncoder.setRange(_low, _high);
     this->rightEncoder.setRange(_low, _high);
-}
-
-void Odometry::setTime(double _newTime) {
-    this->lastTime = _newTime;
 }
 
 void Odometry::updateLeftWheel(uint16_t _newCount) {
@@ -57,11 +57,10 @@ PoseTwist Odometry::getPose() {
 void Odometry::updatePose(double _newTime, double _deltaTheta) {
     /**
      * Updates the pose based on the accumulated encoder ticks
-     * of the two wheels. See https://chess.eecs.berkeley.edu/eecs149/documentation/differentialDrive.pdf
-     * for details.
+     * of the two wheels.
      */
-    this->leftTravel = this->leftEncoder.getDelta() / this->ticksPerMeter;
-    this->rightTravel = this->rightEncoder.getDelta() / this->ticksPerMeter;
+    this->leftTravel = (this->leftEncoder.getDelta() / this->ticksPerRevolution) * this->wheelDiameter * M_PI;
+    this->rightTravel = (this->rightEncoder.getDelta() / this->ticksPerRevolution) * this->wheelDiameter * M_PI;
     const double _deltaTime = _newTime - this->lastTime;
 
     this->wheelDistDiff = this->rightTravel - this->leftTravel;
@@ -75,7 +74,6 @@ void Odometry::updatePose(double _newTime, double _deltaTheta) {
         this->deltaTheta = _deltaTheta;
     }
     
-
     double _deltaX;
     double _deltaY;
     if (fabs(this->wheelDistDiff) < 1E-5) {

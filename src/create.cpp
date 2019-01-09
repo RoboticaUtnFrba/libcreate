@@ -91,10 +91,11 @@ namespace create {
     if (firstOnData) {
       // Initialize tick counts
       odometry = create::Odometry(GET_DATA(ID_LEFT_ENC), 
-                                  GET_DATA(ID_RIGHT_ENC));
-      odometry.setTime(util::getTimestamp() / 1000000.0);
+                                  GET_DATA(ID_RIGHT_ENC),
+                                  util::getTimestamp() / 1000000.0);
       odometry.setWheelSeparation(model.getAxleLength());
-      odometry.setTicksPerMeter(util::V_3_TICKS_PER_REV);
+      odometry.setWheelDiameter(model.getWheelDiameter());
+      odometry.setTicksPerRevolution(util::V_3_TICKS_PER_REV);
       odometry.setEncoderRange(0, util::V_3_MAX_ENCODER_TICKS);
       firstOnData = false;
     }
@@ -496,16 +497,6 @@ namespace create {
     }
   }
 
-//  bool Create::isWheeldrop() const {
-//    if (data->isValidPacketID(ID_BUMP_WHEELDROP)) {
-//      return (GET_DATA(ID_BUMP_WHEELDROP) & 0x0c) != 0;
-//    }
-//    else {
-//      CERR("[create::Create] ", "Wheeldrop sensor not supported!");
-//      return false;
-//    }
-//  }  
-
   bool Create::isLeftBumper() const {
     if (data->isValidPacketID(ID_BUMP_WHEELDROP)) {
       return (GET_DATA(ID_BUMP_WHEELDROP) & 0x02) != 0;
@@ -575,22 +566,6 @@ namespace create {
       return false;
     }
   }
-
-//  bool Create::isCliffLeft() const {
-//    if (data->isValidPacketID(ID_CLIFF_LEFT) &&
-//        data->isValidPacketID(ID_CLIFF_FRONT_LEFT) &&
-//        data->isValidPacketID(ID_CLIFF_FRONT_RIGHT) &&
-//        data->isValidPacketID(ID_CLIFF_RIGHT)) {
-//     return GET_DATA(ID_CLIFF_LEFT) == 1 ||
-//            GET_DATA(ID_CLIFF_FRONT_LEFT) == 1 ||
-//             GET_DATA(ID_CLIFF_FRONT_RIGHT) == 1 ||
-//             GET_DATA(ID_CLIFF_RIGHT) == 1;
-//    }
-//    else {
-//      CERR("[create::Create] ", "Cliff sensors not supported!");
-//      return false;
-//    }
-//  }
 
   bool Create::isVirtualWall() const {
     if (data->isValidPacketID(ID_VIRTUAL_WALL)) {
