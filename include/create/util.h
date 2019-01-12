@@ -57,10 +57,6 @@ namespace create {
       return a;
     };
 
-    inline double degToRad(const int16_t degrees) {
-      return degrees * M_PI / 180.0;
-    };
-
     typedef unsigned long long timestamp_t;
 
     /** Get a timestamp for the current time in micro-seconds.

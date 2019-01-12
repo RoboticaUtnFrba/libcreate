@@ -27,6 +27,8 @@ namespace create {
     checkLED = 0;
     powerLED = 0;
     powerLEDIntensity = 0;
+    prevTicksLeft = 0;
+    prevTicksRight = 0;
     totalLeftDist = 0.0;
     totalRightDist = 0.0;
     firstOnData = true;
@@ -90,43 +92,79 @@ namespace create {
   void Create::onData() {
     if (firstOnData) {
       // Initialize tick counts
-      odometry = create::Odometry(GET_DATA(ID_LEFT_ENC), 
-                                  GET_DATA(ID_RIGHT_ENC),
-                                  util::getTimestamp() / 1000000.0);
-      odometry.setWheelSeparation(model.getAxleLength());
-      odometry.setWheelDiameter(model.getWheelDiameter());
-      odometry.setTicksPerRevolution(util::V_3_TICKS_PER_REV);
-      odometry.setEncoderRange(0, util::V_3_MAX_ENCODER_TICKS);
+      prevTicksLeft = GET_DATA(ID_LEFT_ENC);
+      prevTicksRight = GET_DATA(ID_RIGHT_ENC);
+      prevOnDataTime = util::getTimestamp();
       firstOnData = false;
     }
-    odometry.updateLeftWheel(GET_DATA(ID_LEFT_ENC));
-    odometry.updateRightWheel(GET_DATA(ID_RIGHT_ENC));
+    // Get current time
+    util::timestamp_t curTime = util::getTimestamp();
+    float dt = (curTime - prevOnDataTime) / 1000000.0;
+    float deltaDist, deltaX, deltaY, deltaYaw, leftWheelDist, rightWheelDist, wheelDistDiff;
 
-    odometry.updatePose(util::getTimestamp() / 1000000.0, 
-                        util::degToRad(GET_DATA(ID_ANGLE)));
-    PoseTwist poseTwist = odometry.getPose();
-    pose.x = poseTwist.x;
-    pose.y = poseTwist.y;
-    pose.yaw = poseTwist.theta;
-    vel.x = poseTwist.xVel;
-    vel.y = poseTwist.yVel;
-    vel.yaw = poseTwist.thetaVel;
-  
+    // Get cumulative ticks (wraps around at 65535)
+    uint16_t totalTicksLeft = GET_DATA(ID_LEFT_ENC);
+    uint16_t totalTicksRight = GET_DATA(ID_RIGHT_ENC);
+    // Compute ticks since last update
+    int ticksLeft = totalTicksLeft - prevTicksLeft;
+    int ticksRight = totalTicksRight - prevTicksRight;
+    prevTicksLeft = totalTicksLeft;
+    prevTicksRight = totalTicksRight;
+
+    // Handle wrap around
+    if (fabs(ticksLeft) > 0.9 * util::V_3_MAX_ENCODER_TICKS) {
+      ticksLeft = (ticksLeft % util::V_3_MAX_ENCODER_TICKS) + 1;
+    }
+    if (fabs(ticksRight) > 0.9 * util::V_3_MAX_ENCODER_TICKS) {
+      ticksRight = (ticksRight % util::V_3_MAX_ENCODER_TICKS) + 1;
+    }
+
+    // Compute distance travelled by each wheel
+    leftWheelDist = (ticksLeft / util::V_3_TICKS_PER_REV)
+        * model.getWheelDiameter() * util::PI;
+    rightWheelDist = (ticksRight / util::V_3_TICKS_PER_REV)
+        * model.getWheelDiameter() * util::PI;
+    deltaDist = (rightWheelDist + leftWheelDist) / 2.0;
+
+    wheelDistDiff = rightWheelDist - leftWheelDist;
+    deltaYaw = wheelDistDiff / model.getAxleLength();
+
+    // Moving straight
+    if (fabs(wheelDistDiff) < util::EPS) {
+      deltaX = deltaDist * cos(pose.yaw);
+      deltaY = deltaDist * sin(pose.yaw);
+    } else {
+      float turnRadius = (model.getAxleLength() / 2.0) * (leftWheelDist + rightWheelDist) / wheelDistDiff;
+      deltaX = turnRadius * (sin(pose.yaw + deltaYaw) - sin(pose.yaw));
+      deltaY = -turnRadius * (cos(pose.yaw + deltaYaw) - cos(pose.yaw));
+    }
+
+    totalLeftDist += leftWheelDist;
+    totalRightDist += rightWheelDist;
+
+    if (fabs(dt) > util::EPS) {
+      vel.x = deltaDist / dt;
+      vel.y = 0.0;
+      vel.yaw = deltaYaw / dt;
+    } else {
+      vel.x = 0.0;
+      vel.y = 0.0;
+      vel.yaw = 0.0;
+    }
+
     // Update covariances
     // Ref: "Introduction to Autonomous Mobile Robots" (Siegwart 2004, page 189)
     const float kr = 1.0; // TODO: Perform experiments to find these nondeterministic parameters
     const float kl = 1.0;
-    const double deltaYaw = odometry.getDeltaOrientation();
-    const double deltaDist = odometry.getDeltaDistance();
     const float cosYawAndHalfDelta = cos(pose.yaw + (deltaYaw / 2.0)); // deltaX?
     const float sinYawAndHalfDelta = sin(pose.yaw + (deltaYaw / 2.0)); // deltaY?
     const float distOverTwoWB = deltaDist / (model.getAxleLength() * 2.0);
 
     Matrix invCovar(2, 2);
-    invCovar(0, 0) = kr * fabs(odometry.getRightWheelDistance());
+    invCovar(0, 0) = kr * fabs(rightWheelDist);
     invCovar(0, 1) = 0.0;
     invCovar(1, 0) = 0.0;
-    invCovar(1, 1) = kl * fabs(odometry.getLeftWheelDistance());
+    invCovar(1, 1) = kl * fabs(leftWheelDist);
 
     Matrix Finc(3, 2);
     Finc(0, 0) = (cosYawAndHalfDelta / 2.0) - (distOverTwoWB * sinYawAndHalfDelta);
@@ -175,6 +213,13 @@ namespace create {
     pose.covariance[6] = poseCovar(2, 0);
     pose.covariance[7] = poseCovar(2, 1);
     pose.covariance[8] = poseCovar(2, 2);
+
+    // Update pose
+    pose.x += deltaX;
+    pose.y += deltaY;
+    pose.yaw += deltaYaw;
+    
+    prevOnDataTime = curTime;
 
     // Make user registered callbacks, if any
     // TODO

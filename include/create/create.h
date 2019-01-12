@@ -42,7 +42,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "create/data.h"
 #include "create/types.h"
 #include "create/util.h"
-#include "create/odometry.h"
 
 namespace create {
   class Create {
@@ -75,7 +74,8 @@ namespace create {
       create::Pose pose;
       create::Vel vel;
 
-      create::Odometry odometry;
+      uint32_t prevTicksLeft;
+      uint32_t prevTicksRight;
       float totalLeftDist;
       float totalRightDist;
       bool firstOnData;
@@ -268,15 +268,15 @@ namespace create {
       /**
        * \brief Set the four 7-segment display digits from left to right.
        *
-       * \todo This function is not yet implemented refer to https://github.com/AutonomyLab/libcreate/issues/7 
+       * \todo This function is not yet implemented refer to https://github.com/AutonomyLab/libcreate/issues/7
        * \param segments to enable (true) or disable (false).
        *        The size of segments should be less than 29.
        *        The ordering of segments is left to right, top to bottom for each digit:
        *
        *     <pre>
-                 0           7             14            21 
-               |‾‾‾|       |‾‾‾|         |‾‾‾|         |‾‾‾|  
-             1 |___| 2   8 |___| 9    15 |___| 16   22 |___| 23 
+                 0           7             14            21
+               |‾‾‾|       |‾‾‾|         |‾‾‾|         |‾‾‾|
+             1 |___| 2   8 |___| 9    15 |___| 16   22 |___| 23
                | 3 |       | 10|         | 17|         | 24|
              4 |___| 5   11|___| 12   18 |___| 19   25 |___| 26
                  6           13            20            27
