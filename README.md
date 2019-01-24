@@ -8,6 +8,10 @@ C++ library for interfacing with iRobot's [Create 2](http://www.irobot.com/About
 * Author: [Jacob Perron](http://jacobperron.ca) ([Autonomy Lab](http://autonomylab.org), [Simon Fraser University](http://www.sfu.ca))
 * Contributors: [Mani Monajjemi](http:mani.im), [Ben Wolsieffer](https://github.com/lopsided98)
 
+## Build status ##
+
+![Build Status](https://api.travis-ci.org/RoboticaUtnFrba/libcreate.svg?branch=master)
+
 ## Dependencies ##
 
 * [Boost System Library](http://www.boost.org/doc/libs/1_59_0/libs/system/doc/index.html)
