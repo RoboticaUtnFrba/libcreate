@@ -1,0 +1,8 @@
+<launch> 
+  <test test-name="test_create" pkg="libcreate" type="test_create" name="test_create" />
+  <test test-name="test_data" pkg="libcreate" type="test_data" name="test_data" />
+  <test test-name="test_packet" pkg="libcreate" type="test_packet" name="test_packet" />
+  <test test-name="test_robot_model" pkg="libcreate" type="test_robot_model" name="test_robot_model" />
+  <test test-name="test_serial_query" pkg="libcreate" type="test_serial_query" name="test_serial_query" />
+  <test test-name="test_serial_stream" pkg="libcreate" type="test_serial_stream" name="test_serial_stream" />
+</launch>
