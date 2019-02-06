@@ -326,10 +326,10 @@ namespace create {
     }
 
     uint8_t cmd[5] = { OC_DRIVE,
-                       vel_mm >> 8,
-                       vel_mm & 0xff,
-                       radius_mm >> 8,
-                       radius_mm & 0xff
+                       static_cast<uint8_t>(vel_mm >> 8),
+                       static_cast<uint8_t>(vel_mm & 0xff),
+                       static_cast<uint8_t>(radius_mm >> 8),
+                       static_cast<uint8_t>(radius_mm & 0xff)
                      };
 
     return serial->send(cmd, 5);
@@ -345,10 +345,10 @@ namespace create {
       int16_t rightCmd = roundf(boundedRightVel * 1000);
 
       uint8_t cmd[5] = { OC_DRIVE_DIRECT,
-                         rightCmd >> 8,
-                         rightCmd & 0xff,
-                         leftCmd >> 8,
-                         leftCmd & 0xff
+                         static_cast<uint8_t>(rightCmd >> 8),
+                         static_cast<uint8_t>(rightCmd & 0xff),
+                         static_cast<uint8_t>(leftCmd >> 8),
+                         static_cast<uint8_t>(leftCmd & 0xff)
                        };
       return serial->send(cmd, 5);
     } else {

@@ -1,18 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libcreate)
+## Compile as C++11, supported in ROS Kinetic and newer
+  add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED)
 find_package(Boost REQUIRED system thread)
 find_package(Threads REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include tests
   LIBRARIES create
 )
 
 ## Specify additional locations of header files
 include_directories(
-  include
+  include tests ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare cpp library
@@ -72,3 +74,28 @@ install(TARGETS create
 install(DIRECTORY include/create/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
+
+###########
+# Testing #
+###########
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  include_directories(${GTEST_INCLUDE_DIRS})
+  
+  add_executable(test_create tests/test_create.cpp)
+  add_executable(test_data tests/test_data.cpp)
+  add_executable(test_packet tests/test_packet.cpp)
+  add_executable(test_robot_model tests/test_robot_model.cpp)
+  add_executable(test_serial_query tests/test_serial_query.cpp)
+  add_executable(test_serial_stream tests/test_serial_stream.cpp)
+  
+  target_link_libraries(test_create ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
+  target_link_libraries(test_data ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
+  target_link_libraries(test_packet ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
+  target_link_libraries(test_robot_model ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
+  target_link_libraries(test_serial_query ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
+  target_link_libraries(test_serial_stream ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
+
+  add_rostest(tests/libcreate.test)
+endif()
