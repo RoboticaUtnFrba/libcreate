@@ -1,4 +1,5 @@
 #include "create/data.h"
+#include <iostream>
 
 #define ADD_PACKET(id,nbytes,info,enabledVersion) if ((enabledVersion) & version) packets[id]=boost::make_shared<Packet>(nbytes,info)
 
