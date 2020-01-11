@@ -35,6 +35,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CREATE_SERIAL_H
 #define CREATE_SERIAL_H
 
+#include <string>
+
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/condition_variable.hpp>
@@ -46,54 +48,58 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "create/types.h"
 #include "create/util.h"
 
-namespace create {
-  class Serial : public boost::enable_shared_from_this<Serial> {
+namespace create
+{
+class Serial : public boost::enable_shared_from_this<Serial>
+{
+protected:
+  boost::asio::io_service io;
+  boost::asio::serial_port port;
 
-    protected:
-      boost::asio::io_service io;
-      boost::asio::serial_port port;
-
-    private:
-      boost::thread ioThread;
-      boost::condition_variable dataReadyCond;
-      boost::mutex dataReadyMut;
-      bool dataReady;
-      bool isReading;
-      bool firstRead;
-      uint8_t byteRead;
+private:
+  boost::thread ioThread;
+  boost::condition_variable dataReadyCond;
+  boost::mutex dataReadyMut;
+  bool dataReady;
+  bool isReading;
+  bool firstRead;
+  uint8_t byteRead;
 
 
-      // Callback executed when data arrives from Create
-      void onData(const boost::system::error_code& e, const std::size_t& size);
-      // Callback to execute once data arrives
-      boost::function<void()> callback;
-      // Start and stop reading data from Create
-      bool startReading();
-      void stopReading();
+  // Callback executed when data arrives from Create
+  void onData(const boost::system::error_code& e, const std::size_t& size);
+  // Callback to execute once data arrives
+  boost::function<void()> callback;
+  // Start and stop reading data from Create
+  bool startReading();
+  void stopReading();
 
-    protected:
-      boost::shared_ptr<Data> data;
-      // These are for possible diagnostics
-      uint64_t corruptPackets;
-      uint64_t totalPackets;
+protected:
+  boost::shared_ptr<Data> data;
+  // These are for possible diagnostics
+  uint64_t corruptPackets;
+  uint64_t totalPackets;
 
-      virtual bool startSensorStream() = 0;
-      virtual void processByte(uint8_t byteRead) = 0;
+  virtual bool startSensorStream() = 0;
+  virtual void processByte(uint8_t byteRead) = 0;
 
-      // Notifies main thread that data is fresh and makes the user callback
-      void notifyDataReady();
+  // Notifies main thread that data is fresh and makes the user callback
+  void notifyDataReady();
 
-    public:
-      Serial(boost::shared_ptr<Data> data);
-      ~Serial();
-      bool connect(const std::string& port, const int& baud = 115200, boost::function<void()> cb = 0);
-      void disconnect();
-      inline bool connected() const { return port.is_open(); };
-      bool send(const uint8_t* bytes, const uint32_t numBytes);
-      bool sendOpcode(const Opcode& code);
-      uint64_t getNumCorruptPackets() const;
-      uint64_t getTotalPackets() const;
+public:
+  explicit Serial(boost::shared_ptr<Data> data);
+  ~Serial();
+  bool connect(const std::string& port, const int& baud = 115200, boost::function<void()> cb = 0);
+  void disconnect();
+  inline bool connected() const
+  {
+    return port.is_open();
   };
+  bool send(const uint8_t* bytes, const uint32_t numBytes);
+  bool sendOpcode(const Opcode& code);
+  uint64_t getNumCorruptPackets() const;
+  uint64_t getTotalPackets() const;
+};
 }  // namespace create
 
-#endif // CREATE_SERIAL_H
+#endif  // CREATE_SERIAL_H

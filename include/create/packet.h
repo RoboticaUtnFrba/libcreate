@@ -33,28 +33,32 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/thread/mutex.hpp>
 
-namespace create {
-  class Packet {
-    private:
-      uint16_t data;
-      uint16_t tmpData;
-      mutable boost::mutex dataMutex;
-      mutable boost::mutex tmpDataMutex;
+#include <string>
 
-    public:
-      const uint8_t nbytes;
-      const std::string info;
+namespace create
+{
+class Packet
+{
+private:
+  uint16_t data;
+  uint16_t tmpData;
+  mutable boost::mutex dataMutex;
+  mutable boost::mutex tmpDataMutex;
 
-      Packet(const uint8_t& nbytes, const std::string& info);
-      ~Packet();
+public:
+  const uint8_t nbytes;
+  const std::string info;
 
-      // All of the following are thread safe
-      void setTempData(const uint16_t& td);
-      void validate();
-      void setData(const uint16_t& d);
-      uint16_t getData() const;
-  };
+  explicit Packet(const uint8_t& nbytes, const std::string& info);
+  ~Packet();
 
-}  // namepsace create
+  // All of the following are thread safe
+  void setTempData(const uint16_t& td);
+  void validate();
+  void setData(const uint16_t& d);
+  uint16_t getData() const;
+};
 
-#endif // CREATE_PACKET_H
+}  // namespace create
+
+#endif  // CREATE_PACKET_H

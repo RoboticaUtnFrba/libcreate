@@ -1,33 +1,44 @@
+/**
+ * Copyright 2020
+ * 
+ */
 #include "create/packet.h"
 
-namespace create {
+#include <string>
 
-  Packet::Packet(const uint8_t& numBytes, const std::string& comment) :
-    nbytes(numBytes),
-    info(comment),
-    data(0),
-    tmpData(0) { }
+namespace create
+{
 
-  Packet::~Packet() { }
+Packet::Packet(const uint8_t& numBytes, const std::string& comment) :
+  nbytes(numBytes),
+  info(comment),
+  data(0),
+  tmpData(0) { }
 
-  void Packet::setTempData(const uint16_t& tmp) {
-    boost::mutex::scoped_lock lock(tmpDataMutex);
-    tmpData = tmp;
-  }
+Packet::~Packet() { }
 
-  void Packet::validate() {
-    boost::mutex::scoped_lock lock(tmpDataMutex);
-    setData(tmpData);
-  }
+void Packet::setTempData(const uint16_t& tmp)
+{
+  boost::mutex::scoped_lock lock(tmpDataMutex);
+  tmpData = tmp;
+}
 
-  void Packet::setData(const uint16_t& d) {
-    boost::mutex::scoped_lock lock(dataMutex);
-    data = d;
-  }
+void Packet::validate()
+{
+  boost::mutex::scoped_lock lock(tmpDataMutex);
+  setData(tmpData);
+}
 
-  uint16_t Packet::getData() const {
-    boost::mutex::scoped_lock lock(dataMutex);
-    return data;
-  }
+void Packet::setData(const uint16_t& d)
+{
+  boost::mutex::scoped_lock lock(dataMutex);
+  data = d;
+}
 
-} // namespace create
+uint16_t Packet::getData() const
+{
+  boost::mutex::scoped_lock lock(dataMutex);
+  return data;
+}
+
+}  // namespace create

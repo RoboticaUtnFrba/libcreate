@@ -31,6 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "create/packet.h"
 #include "create/types.h"
 
+#include <string>
+
 #include "gtest/gtest.h"
 
 TEST(PacketTest, Constructor)
@@ -73,7 +75,8 @@ TEST(PacketTest, SetValidateAndGetData)
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

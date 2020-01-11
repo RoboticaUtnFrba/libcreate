@@ -47,30 +47,31 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "create/util.h"
 #include "create/serial.h"
 
-namespace create {
-  class SerialQuery : public Serial {
+namespace create
+{
+class SerialQuery : public Serial
+{
+private:
+  boost::asio::deadline_timer streamRecoveryTimer;
+  uint8_t packetID;
+  int8_t packetByte;
+  uint16_t packetData;
+  const uint8_t maxPacketID;
 
-    private:
-      boost::asio::deadline_timer streamRecoveryTimer;
-      uint8_t packetID;
-      int8_t packetByte;
-      uint16_t packetData;
-      const uint8_t maxPacketID;
+  bool started;
 
-      bool started;
+  void requestSensorData();
+  void restartSensorStream(const boost::system::error_code& err);
 
-      void requestSensorData();
-      void restartSensorStream(const boost::system::error_code& err);
+  void flushInput();
 
-      void flushInput();
+protected:
+  bool startSensorStream();
+  void processByte(uint8_t byteRead);
 
-    protected:
-      bool startSensorStream();
-      void processByte(uint8_t byteRead);
-
-    public:
-      SerialQuery(boost::shared_ptr<Data> data);
-  };
+public:
+  explicit SerialQuery(boost::shared_ptr<Data> data);
+};
 }  // namespace create
 
-#endif // CREATE_SERIAL_H
+#endif  // CREATE_SERIAL_QUERY_H

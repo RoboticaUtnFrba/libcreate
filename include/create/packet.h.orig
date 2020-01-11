@@ -1,7 +1,7 @@
 /**
 Software License Agreement (BSD)
 
-\file      util.h
+\file      packet.h
 \authors   Jacob Perron <jperron@sfu.ca>
 \copyright Copyright (c) 2015, Autonomy Lab (Simon Fraser University), All rights reserved.
 
@@ -28,55 +28,33 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef CREATE_PACKET_H
+#define CREATE_PACKET_H
 
-#ifndef CREATE_UTIL_H
-#define CREATE_UTIL_H
+#include <boost/thread/mutex.hpp>
 
-#include <sys/time.h>
-#include <limits>
+namespace create {
+  class Packet {
+    private:
+      uint16_t data;
+      uint16_t tmpData;
+      mutable boost::mutex dataMutex;
+      mutable boost::mutex tmpDataMutex;
 
-#define COUT(prefix, msg) (std::cout << prefix << msg << std::endl)
-#define CERR(prefix, msg) (std::cerr << prefix << msg << std::endl)
+    public:
+      const uint8_t nbytes;
+      const std::string info;
 
-namespace create
-{
-namespace util
-{
+      Packet(const uint8_t& nbytes, const std::string& info);
+      ~Packet();
 
-static const uint8_t STREAM_HEADER = 19;
-static const float V_3_TICKS_PER_REV = 508.8;
-static const uint32_t V_3_MAX_ENCODER_TICKS = 65535;
-static const float MAX_RADIUS = 2.0;
-static const float STRAIGHT_RADIUS = 32.768;
-static const float IN_PLACE_RADIUS = 0.001;
-static const float PI = 3.14159;
-static const float TWO_PI = 6.28318;
-static const float EPS = 0.0001;
+      // All of the following are thread safe
+      void setTempData(const uint16_t& td);
+      void validate();
+      void setData(const uint16_t& d);
+      uint16_t getData() const;
+  };
 
-inline float normalizeAngle(const float& angle)
-{
-  float a = angle;
-  while (a < -PI) a += TWO_PI;
-  while (a > PI) a -= TWO_PI;
-  return a;
-};
+}  // namepsace create
 
-typedef uint64_t timestamp_t;
-
-/** Get a timestamp for the current time in micro-seconds.
- */
-static timestamp_t getTimestamp()
-{
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  return now.tv_usec + (timestamp_t) now.tv_sec * 1000000;
-}
-
-inline bool willFloatOverflow(const float a, const float b)
-{
-  return ((a < 0.0) == (b < 0.0) && std::abs(b) > std::numeric_limits<float>::max() - std::abs(a));
-}
-}  // namespace util
-}  // namespace create
-
-#endif  // CREATE_UTIL_H
+#endif // CREATE_PACKET_H

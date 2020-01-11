@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libcreate)
 ## Compile as C++11, supported in ROS Kinetic and newer
-  add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS 
+  roslint
+)
+
 find_package(Boost REQUIRED system thread)
 find_package(Threads REQUIRED)
 
@@ -20,11 +23,11 @@ include_directories(
 ## Declare cpp library
 add_library(create
   src/create.cpp
-  src/serial.cpp
-  src/serial_stream.cpp
-  src/serial_query.cpp
   src/data.cpp
   src/packet.cpp
+  src/serial.cpp
+  src/serial_query.cpp
+  src/serial_stream.cpp
   src/types.cpp
 )
 
@@ -49,7 +52,7 @@ set(EXAMPLES
 )
 foreach(EXAMPLE ${EXAMPLES})
   add_executable(${EXAMPLE} examples/${EXAMPLE}.cpp)
-endforeach(EXAMPLE)
+endforeach()
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(create_demo
@@ -75,6 +78,10 @@ install(DIRECTORY include/create/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
+install(TARGETS bumper_example create_demo odom_example
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
 ###########
 # Testing #
 ###########
@@ -97,5 +104,8 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(test_serial_query ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
   target_link_libraries(test_serial_stream ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
 
-  add_rostest(tests/libcreate.test)
+  add_rostest(tests/${PROJECT_NAME}.test)
 endif()
+
+set(ROSLINT_CPP_OPTS "--filter=-build/c++11, -runtime/references, -runtime/arrays")
+roslint_cpp()

@@ -1,7 +1,7 @@
 /**
 Software License Agreement (BSD)
 
-\file      util.h
+\file      data.h
 \authors   Jacob Perron <jperron@sfu.ca>
 \copyright Copyright (c) 2015, Autonomy Lab (Simon Fraser University), All rights reserved.
 
@@ -29,54 +29,35 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef CREATE_UTIL_H
-#define CREATE_UTIL_H
+#ifndef CREATE_DATA_H
+#define CREATE_DATA_H
 
-#include <sys/time.h>
-#include <limits>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <map>
+#include <vector>
 
-#define COUT(prefix, msg) (std::cout << prefix << msg << std::endl)
-#define CERR(prefix, msg) (std::cerr << prefix << msg << std::endl)
+#include "create/packet.h"
+#include "create/types.h"
 
-namespace create
-{
-namespace util
-{
+namespace create {
+  class Data {
+    private:
+      std::map<uint8_t, boost::shared_ptr<Packet> > packets;
+      uint32_t totalDataBytes;
+      std::vector<uint8_t> ids;
 
-static const uint8_t STREAM_HEADER = 19;
-static const float V_3_TICKS_PER_REV = 508.8;
-static const uint32_t V_3_MAX_ENCODER_TICKS = 65535;
-static const float MAX_RADIUS = 2.0;
-static const float STRAIGHT_RADIUS = 32.768;
-static const float IN_PLACE_RADIUS = 0.001;
-static const float PI = 3.14159;
-static const float TWO_PI = 6.28318;
-static const float EPS = 0.0001;
+    public:
+      Data(ProtocolVersion version = V_3);
+      ~Data();
 
-inline float normalizeAngle(const float& angle)
-{
-  float a = angle;
-  while (a < -PI) a += TWO_PI;
-  while (a > PI) a -= TWO_PI;
-  return a;
-};
-
-typedef uint64_t timestamp_t;
-
-/** Get a timestamp for the current time in micro-seconds.
- */
-static timestamp_t getTimestamp()
-{
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  return now.tv_usec + (timestamp_t) now.tv_sec * 1000000;
-}
-
-inline bool willFloatOverflow(const float a, const float b)
-{
-  return ((a < 0.0) == (b < 0.0) && std::abs(b) > std::numeric_limits<float>::max() - std::abs(a));
-}
-}  // namespace util
+      bool isValidPacketID(const uint8_t id) const;
+      boost::shared_ptr<Packet> getPacket(const uint8_t id);
+      void validateAll();
+      uint32_t getTotalDataBytes() const;
+      uint8_t getNumPackets() const;
+      std::vector<uint8_t> getPacketIDs();
+  };
 }  // namespace create
 
-#endif  // CREATE_UTIL_H
+#endif // CREATE_DATA_H

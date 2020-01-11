@@ -40,24 +40,26 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "create/packet.h"
 #include "create/types.h"
 
-namespace create {
-  class Data {
-    private:
-      std::map<uint8_t, boost::shared_ptr<Packet> > packets;
-      uint32_t totalDataBytes;
-      std::vector<uint8_t> ids;
+namespace create
+{
+class Data
+{
+private:
+  std::map<uint8_t, boost::shared_ptr<Packet> > packets;
+  uint32_t totalDataBytes;
+  std::vector<uint8_t> ids;
 
-    public:
-      Data(ProtocolVersion version = V_3);
-      ~Data();
+public:
+  explicit Data(ProtocolVersion version = V_3);
+  ~Data();
 
-      bool isValidPacketID(const uint8_t id) const;
-      boost::shared_ptr<Packet> getPacket(const uint8_t id);
-      void validateAll();
-      uint32_t getTotalDataBytes() const;
-      uint8_t getNumPackets() const;
-      std::vector<uint8_t> getPacketIDs();
-  };
+  bool isValidPacketID(const uint8_t id) const;
+  boost::shared_ptr<Packet> getPacket(const uint8_t id);
+  void validateAll();
+  uint32_t getTotalDataBytes() const;
+  uint8_t getNumPackets() const;
+  std::vector<uint8_t> getPacketIDs();
+};
 }  // namespace create
 
-#endif // CREATE_DATA_H
+#endif  // CREATE_DATA_H

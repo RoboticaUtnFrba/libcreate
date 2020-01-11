@@ -45,8 +45,8 @@ TEST(CreateTest, ConstructorSingleParam)
 
 // TEST(CreateTest, ConstructorMultiParam)
 // {
-//   TODO(jacobperron): Document exception thrown and consider defining custom exception
-//   create::Create create(std::string("/dev/ttyUSB0"), 11520);
+// TODO(jacobperron): Document exception thrown and consider defining custom exception
+//    create::Create create(std::string("/dev/ttyUSB0"), 11520);
 // }
 
 TEST(CreateTest, Connected)
@@ -64,7 +64,8 @@ TEST(CreateTest, Disconnect)
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

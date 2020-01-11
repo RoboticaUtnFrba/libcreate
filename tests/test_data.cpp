@@ -35,6 +35,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "gtest/gtest.h"
 
 #include <boost/shared_ptr.hpp>
+#include <string>
+#include <vector>
 
 TEST(DataTest, Constructor)
 {
@@ -169,7 +171,8 @@ TEST(DataTest, ValidateAll)
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
