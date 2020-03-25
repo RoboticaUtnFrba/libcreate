@@ -1,6 +1,6 @@
 /**
  * Copyright 2020
- * 
+ *
  */
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
@@ -145,11 +145,13 @@ void Create::onData()
   }
 
   // Compute distance travelled by each wheel
-  leftWheelDist = (ticksLeft / util::V_3_TICKS_PER_REV)
-                  * model.getWheelDiameter() * util::PI;
-  rightWheelDist = (ticksRight / util::V_3_TICKS_PER_REV)
-                   * model.getWheelDiameter() * util::PI;
-  deltaDist = (rightWheelDist + leftWheelDist) / 2.0;
+  // Angular distance in radians
+  const float leftWheelAngularDist  = (ticksLeft  / util::V_3_TICKS_PER_REV) * util::PI;
+  const float rightWheelAngularDist = (ticksRight / util::V_3_TICKS_PER_REV) * util::PI;
+  // Linear distance
+  leftWheelDist  = leftWheelAngularDist  * model.getWheelDiameter() / 2.0;
+  rightWheelDist = rightWheelAngularDist * model.getWheelDiameter() / 2.0;
+  deltaDist = (rightWheelDist + leftWheelDist);
 
   wheelDistDiff = rightWheelDist - leftWheelDist;
   deltaYaw = wheelDistDiff / model.getAxleLength();
@@ -1181,12 +1183,12 @@ bool Create::isMovingForward() const
   }
 }
 
-float Create::getLeftWheelDistance() const
+float Create::getLeftWheelTotalDistance() const
 {
   return totalLeftDist;
 }
 
-float Create::getRightWheelDistance() const
+float Create::getRightWheelTotalDistance() const
 {
   return totalRightDist;
 }

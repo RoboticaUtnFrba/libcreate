@@ -581,13 +581,13 @@ public:
    * \brief Get the total distance the left wheel has moved.
    * \return distance in meters.
    */
-  float getLeftWheelDistance() const;
+  float getLeftWheelTotalDistance() const;
 
   /**
    * \brief Get the total distance the right wheel has moved.
    * \return distance in meters.
    */
-  float getRightWheelDistance() const;
+  float getRightWheelTotalDistance() const;
 
   /**
    * \brief Get the measured velocity of the left wheel.
