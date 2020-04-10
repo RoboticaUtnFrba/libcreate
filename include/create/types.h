@@ -84,7 +84,7 @@ private:
   float wheelDiameter;
 
   RobotModel(const ProtocolVersion version, const float axleLength, const unsigned int baud,
-             const float maxVelocity = 0.5, const float wheelDiameter = 0.078);
+             const float maxVelocity = 0.5, const float wheelDiameter = 0.072);
   static uint32_t nextId;
 };
 
