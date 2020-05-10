@@ -21,13 +21,17 @@ C++ library for interfacing with iRobot's [Create 2](http://www.irobot.com/About
 
 ### Install ###
 
-        sudo apt-get install build-essential cmake libboost-system-dev libboost-thread-dev
+```bash
+sudo apt-get install build-essential cmake libboost-system-dev libboost-thread-dev
+```
 
 #### Serial Permissions ####
 
 User permission is requried to connect to Create over serial. You can add your user to the dialout group to get permission:
 
-        sudo usermod -a -G dialout $USER
+```bash
+sudo usermod -a -G dialout $USER
+```
 
 Logout and login again for this to take effect.
 
@@ -35,14 +39,16 @@ Logout and login again for this to take effect.
 
 Note, the examples found in the "examples" directory are built with the library.
 
-#### catkin ####
+### catkin ###
 
-        mkdir -p create_ws/src
-        cd create_ws
-        catkin init
-        cd src
-        git clone https://github.com/eborghi10/libcreate.git
-        catkin build
+```bash
+mkdir -p create_ws/src
+cd create_ws
+catkin init
+cd src
+git clone https://github.com/RoboticaUtnFrba/libcreate.git
+catkin_make
+```
 
 ## Known Issues ##
 
