@@ -4,13 +4,15 @@ C++ library for interfacing with iRobot's [Create 2](http://www.irobot.com/About
 
 * [Code API](http://docs.ros.org/kinetic/api/libcreate/html/index.html)
 * Protocol documentation:
-  - [`V_3`](https://cdn-shop.adafruit.com/datasheets/create_2_Open_Interface_Spec.pdf) (Create 2, Roomba 600-800 series)
+  * [`V_3`](https://cdn-shop.adafruit.com/datasheets/create_2_Open_Interface_Spec.pdf) (Create 2, Roomba 600-800 series)
 * Author: [Jacob Perron](http://jacobperron.ca) ([Autonomy Lab](http://autonomylab.org), [Simon Fraser University](http://www.sfu.ca))
 * Contributors: [Mani Monajjemi](http:mani.im), [Ben Wolsieffer](https://github.com/lopsided98)
 
 ## Build status ##
 
 ![Build Status](https://api.travis-ci.org/RoboticaUtnFrba/libcreate.svg?branch=master)
+[![GitHub issues](https://img.shields.io/github/issues-raw/RoboticaUtnFrba/libcreate)](https://github.com/RoboticaUtnFrba/libcreate/issues)
+[![GitHub](https://img.shields.io/github/license/RoboticaUtnFrba/libcreate)](https://github.com/RoboticaUtnFrba/libcreate/blob/master/LICENSE)
 
 ## Dependencies ##
 
