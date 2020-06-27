@@ -44,9 +44,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-#include "create/data.h"
-#include "create/types.h"
-#include "create/util.h"
+#include "libcreate/data.h"
+#include "libcreate/types.h"
+#include "libcreate/util.h"
 
 namespace create
 {

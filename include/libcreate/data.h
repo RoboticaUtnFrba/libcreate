@@ -1,9 +1,8 @@
 /**
 Software License Agreement (BSD)
 
-\file      serial_query.h
+\file      data.h
 \authors   Jacob Perron <jperron@sfu.ca>
-\authors   Ben Wolsieffer <benwolsieffer@gmail.com>
 \copyright Copyright (c) 2015, Autonomy Lab (Simon Fraser University), All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,48 +29,37 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Based on example from:
-//   https://github.com/labust/labust-ros-pkg/wiki/Create-a-Serial-Port-application
+#ifndef CREATE_DATA_H
+#define CREATE_DATA_H
 
-#ifndef CREATE_SERIAL_QUERY_H
-#define CREATE_SERIAL_QUERY_H
-
-#include <boost/asio.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <map>
+#include <vector>
 
-#include "create/data.h"
-#include "create/types.h"
-#include "create/util.h"
-#include "create/serial.h"
+#include "libcreate/packet.h"
+#include "libcreate/types.h"
 
 namespace create
 {
-class SerialQuery : public Serial
+class Data
 {
 private:
-  boost::asio::deadline_timer streamRecoveryTimer;
-  uint8_t packetID;
-  int8_t packetByte;
-  uint16_t packetData;
-  const uint8_t maxPacketID;
-
-  bool started;
-
-  void requestSensorData();
-  void restartSensorStream(const boost::system::error_code& err);
-
-  void flushInput();
-
-protected:
-  bool startSensorStream();
-  void processByte(uint8_t byteRead);
+  std::map<uint8_t, boost::shared_ptr<Packet> > packets;
+  uint32_t totalDataBytes;
+  std::vector<uint8_t> ids;
 
 public:
-  explicit SerialQuery(boost::shared_ptr<Data> data);
+  explicit Data(ProtocolVersion version = V_3);
+  ~Data();
+
+  bool isValidPacketID(const uint8_t id) const;
+  boost::shared_ptr<Packet> getPacket(const uint8_t id);
+  void validateAll();
+  uint32_t getTotalDataBytes() const;
+  uint8_t getNumPackets() const;
+  std::vector<uint8_t> getPacketIDs();
 };
 }  // namespace create
 
-#endif  // CREATE_SERIAL_QUERY_H
+#endif  // CREATE_DATA_H

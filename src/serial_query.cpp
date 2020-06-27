@@ -3,8 +3,8 @@
  */
 #include <iostream>
 
-#include "create/serial_query.h"
-#include "create/types.h"
+#include "libcreate/serial_query.h"
+#include "libcreate/types.h"
 
 #define SENSORS_RESPONSE_LENGTH 20
 

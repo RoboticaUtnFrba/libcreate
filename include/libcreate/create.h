@@ -38,11 +38,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <vector>
 
-#include "create/serial_stream.h"
-#include "create/serial_query.h"
-#include "create/data.h"
-#include "create/types.h"
-#include "create/util.h"
+#include "libcreate/serial_stream.h"
+#include "libcreate/serial_query.h"
+#include "libcreate/data.h"
+#include "libcreate/types.h"
+#include "libcreate/util.h"
 
 namespace create
 {
