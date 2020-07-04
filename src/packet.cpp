@@ -1,6 +1,6 @@
 /**
  * Copyright 2020
- * 
+ *
  */
 #include "create/packet.h"
 
@@ -10,10 +10,11 @@ namespace create
 {
 
 Packet::Packet(const uint8_t& numBytes, const std::string& comment) :
-  nbytes(numBytes),
-  info(comment),
   data(0),
-  tmpData(0) { }
+  tmpData(0),
+  nbytes(numBytes),
+  info(comment)
+{ }
 
 Packet::~Packet() { }
 

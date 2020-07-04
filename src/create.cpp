@@ -5,6 +5,7 @@
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
 
+#include <algorithm>
 #include <assert.h>
 #include <cmath>
 #include <ctime>
@@ -16,15 +17,16 @@
 #include "create/create.h"
 
 #define GET_DATA(id) (data->getPacket(id)->getData())
-#define BOUND_CONST(val, min, max) (val < min?min:(val > max?max:val))
-#define BOUND(val, min, max) (val = BOUND_CONST(val, min, max))
+
+template <class T> T bound(T val, T min, T max)
+{
+  return std::max(std::min(val, max), min);
+}
 
 namespace create
 {
 
 namespace ublas = boost::numeric::ublas;
-
-// TODO(eborghi10): Handle SIGINT to do clean disconnect
 
 void Create::init()
 {
@@ -83,16 +85,16 @@ Create::~Create()
 
 Create::Matrix Create::addMatrices(const Matrix &A, const Matrix &B) const
 {
-  int rows = A.size1();
-  int cols = A.size2();
+  size_t rows = A.size1();
+  size_t cols = A.size2();
 
   assert(rows == B.size1());
   assert(cols == B.size2());
 
   Matrix C(rows, cols);
-  for (int i = 0; i < rows; i++)
+  for (size_t i = 0; i < rows; i++)
   {
-    for (int j = 0; j < cols; j++)
+    for (size_t j = 0; j < cols; j++)
     {
       const float a = A(i, j);
       const float b = B(i, j);
@@ -117,12 +119,12 @@ void Create::onData()
     // Initialize tick counts
     prevTicksLeft = GET_DATA(ID_LEFT_ENC);
     prevTicksRight = GET_DATA(ID_RIGHT_ENC);
-    prevOnDataTime = util::getTimestamp();
+    prevOnDataTime = std::chrono::system_clock::now();
     firstOnData = false;
   }
   // Get current time
-  util::timestamp_t curTime = util::getTimestamp();
-  float dt = (curTime - prevOnDataTime) / 1000000.0;
+  auto curTime = std::chrono::system_clock::now();
+  float dt = static_cast<std::chrono::duration<float>>(curTime - prevOnDataTime).count();
   float deltaDist, deltaX, deltaY, deltaYaw, leftWheelDist, rightWheelDist, wheelDistDiff;
 
   // Get cumulative ticks (wraps around at 65535)
@@ -302,7 +304,7 @@ bool Create::setMode(const CreateMode& mode)
     // Switch to safe mode (required for compatibility with V_1)
     if (!(serial->sendOpcode(OC_START) && serial->sendOpcode(OC_CONTROL))) return false;
   }
-  bool ret;
+  bool ret(false);
   switch (mode)
   {
   case MODE_OFF:
@@ -332,10 +334,7 @@ bool Create::setMode(const CreateMode& mode)
     CERR("[create::Create] ", "cannot set robot to mode '" << mode << "'");
     ret = false;
   }
-  if (ret)
-  {
-    this->mode = mode;
-  }
+  if (ret) this->mode = mode;
   return ret;
 }
 
@@ -351,9 +350,7 @@ bool Create::dock() const
 
 bool Create::setDate(const DayOfWeek& day, const uint8_t& hour, const uint8_t& min) const
 {
-  if (day < 0 || day > 6 ||
-      hour < 0 || hour > 23 ||
-      min < 0 || min > 59)
+  if (day < 0 || day > 6 || hour > 23 || min > 59)
     return false;
 
   uint8_t cmd[4] = { OC_DATE, day, hour, min };
@@ -363,17 +360,18 @@ bool Create::setDate(const DayOfWeek& day, const uint8_t& hour, const uint8_t& m
 bool Create::driveRadius(const float& vel, const float& radius)
 {
   // Bound velocity
-  float boundedVel = BOUND_CONST(vel, -model.getMaxVelocity(), model.getMaxVelocity());
+  float boundedVel = bound(vel, -model.getMaxVelocity(), model.getMaxVelocity());
 
   // Expects each parameter as two bytes each and in millimeters
   int16_t vel_mm = roundf(boundedVel * 1000);
   int16_t radius_mm = roundf(radius * 1000);
 
   // Bound radius if not a special case
-  if (radius_mm != 32768 && radius_mm != 32767 &&
+  if (radius_mm != -32768 && radius_mm != 32767 &&
       radius_mm != -1 && radius_mm != 1)
   {
-    BOUND(radius_mm, -util::MAX_RADIUS * 1000, util::MAX_RADIUS * 1000);
+    bound(radius_mm, static_cast<int16_t>(-util::MAX_RADIUS * 1000),
+                     static_cast<int16_t>(util::MAX_RADIUS * 1000));
   }
 
   uint8_t cmd[5] =
@@ -390,8 +388,8 @@ bool Create::driveRadius(const float& vel, const float& radius)
 
 bool Create::driveWheels(const float& leftVel, const float& rightVel)
 {
-  const float boundedLeftVel = BOUND_CONST(leftVel, -model.getMaxVelocity(), model.getMaxVelocity());
-  const float boundedRightVel = BOUND_CONST(rightVel, -model.getMaxVelocity(), model.getMaxVelocity());
+  const float boundedLeftVel = bound(leftVel, -model.getMaxVelocity(), model.getMaxVelocity());
+  const float boundedRightVel = bound(rightVel, -model.getMaxVelocity(), model.getMaxVelocity());
   requestedLeftVel = boundedLeftVel;
   requestedRightVel = boundedRightVel;
   if (model.getVersion() > V_1)
@@ -584,7 +582,7 @@ bool Create::defineSong(const uint8_t& songNumber,
 {
   int i, j;
   uint8_t duration;
-  uint8_t cmd[2 * songLength + 3];
+  std::vector<uint8_t> cmd(2 * songLength + 3);
   cmd[0] = OC_SONG;
   cmd[1] = songNumber;
   cmd[2] = songLength;
@@ -599,18 +597,18 @@ bool Create::defineSong(const uint8_t& songNumber,
     j++;
   }
 
-  return serial->send(cmd, 2 * songLength + 3);
+  return serial->send(cmd.data(), cmd.size());
 }
 
 bool Create::playSong(const uint8_t& songNumber) const
 {
-  if (songNumber < 0 || songNumber > 4)
+  if (songNumber > 4)
     return false;
   uint8_t cmd[2] = { OC_PLAY, songNumber };
   return serial->send(cmd, 2);
 }
 
-bool Create::isLeftWheel() const
+bool Create::isLeftWheeldrop() const
 {
   if (data->isValidPacketID(ID_BUMP_WHEELDROP))
   {
@@ -623,7 +621,7 @@ bool Create::isLeftWheel() const
   }
 }
 
-bool Create::isRightWheel() const
+bool Create::isRightWheeldrop() const
 {
   if (data->isValidPacketID(ID_BUMP_WHEELDROP))
   {
@@ -679,7 +677,7 @@ bool Create::isCliffLeft() const
 {
   if (data->isValidPacketID(ID_CLIFF_LEFT))
   {
-    return GET_DATA(ID_CLIFF_LEFT);
+    return GET_DATA(ID_CLIFF_LEFT) == 1;
   }
   else
   {
@@ -692,7 +690,7 @@ bool Create::isCliffFrontLeft() const
 {
   if (data->isValidPacketID(ID_CLIFF_FRONT_LEFT))
   {
-    return GET_DATA(ID_CLIFF_FRONT_LEFT);
+    return GET_DATA(ID_CLIFF_FRONT_LEFT) == 1;
   }
   else
   {
@@ -705,7 +703,7 @@ bool Create::isCliffFrontRight() const
 {
   if (data->isValidPacketID(ID_CLIFF_FRONT_RIGHT))
   {
-    return GET_DATA(ID_CLIFF_FRONT_RIGHT);
+    return GET_DATA(ID_CLIFF_FRONT_RIGHT) == 1;
   }
   else
   {
@@ -718,7 +716,7 @@ bool Create::isCliffRight() const
 {
   if (data->isValidPacketID(ID_CLIFF_RIGHT))
   {
-    return GET_DATA(ID_CLIFF_RIGHT);
+    return GET_DATA(ID_CLIFF_RIGHT) == 1;
   }
   else
   {
@@ -731,7 +729,7 @@ bool Create::isVirtualWall() const
 {
   if (data->isValidPacketID(ID_VIRTUAL_WALL))
   {
-    return GET_DATA(ID_VIRTUAL_WALL);
+    return GET_DATA(ID_VIRTUAL_WALL) == 1;
   }
   else
   {
@@ -830,7 +828,6 @@ ChargingState Create::getChargingState() const
   if (data->isValidPacketID(ID_CHARGE_STATE))
   {
     uint8_t chargeState = GET_DATA(ID_CHARGE_STATE);
-    assert(chargeState >= 0);
     assert(chargeState <= 5);
     return (ChargingState) chargeState;
   }

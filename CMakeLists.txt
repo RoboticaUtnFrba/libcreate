@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libcreate)
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS 
+add_compile_options(-std=c++11 -Wall -Wextra -Werror -Wpedantic -DCMAKE_BUILD_TYPE=Release)
+
+find_package(catkin REQUIRED COMPONENTS
   roslint
 )
 
@@ -51,22 +51,16 @@ set(EXAMPLES
   odom_example
 )
 foreach(EXAMPLE ${EXAMPLES})
-  add_executable(${EXAMPLE} examples/${EXAMPLE}.cpp)
+  add_executable(${PROJECT_NAME}_${EXAMPLE} examples/${EXAMPLE}.cpp)
+  ## Specify libraries to link a library or executable target against
+  target_link_libraries(${PROJECT_NAME}_${EXAMPLE}
+    ${Boost_LIBRARIES}
+    create
+  )
+  install(TARGETS ${PROJECT_NAME}_${EXAMPLE}
+    DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  )
 endforeach()
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(create_demo
-  ${Boost_LIBRARIES}
-  create
-)
-target_link_libraries(bumper_example
-  ${Boost_LIBRARIES}
-  create
-)
-target_link_libraries(odom_example
-  ${Boost_LIBRARIES}
-  create
-)
 
 ## Install
 
@@ -78,10 +72,6 @@ install(DIRECTORY include/create/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
-install(TARGETS bumper_example create_demo odom_example
-        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
-
 ###########
 # Testing #
 ###########
@@ -89,20 +79,25 @@ install(TARGETS bumper_example create_demo odom_example
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   include_directories(${GTEST_INCLUDE_DIRS})
-  
-  add_executable(test_create tests/test_create.cpp)
-  add_executable(test_data tests/test_data.cpp)
-  add_executable(test_packet tests/test_packet.cpp)
-  add_executable(test_robot_model tests/test_robot_model.cpp)
-  add_executable(test_serial_query tests/test_serial_query.cpp)
-  add_executable(test_serial_stream tests/test_serial_stream.cpp)
-  
-  target_link_libraries(test_create ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
-  target_link_libraries(test_data ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
-  target_link_libraries(test_packet ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
-  target_link_libraries(test_robot_model ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
-  target_link_libraries(test_serial_query ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
-  target_link_libraries(test_serial_stream ${Boost_LIBRARIES} gtest ${catkin_LIBRARIES} create)
+
+  set(TESTS
+    create
+    data
+    packet
+    robot_model
+    serial_query
+    serial_stream
+  )
+
+  foreach(TEST ${TESTS})
+    add_executable(test_${PROJECT_NAME}_${TEST} tests/test_${TEST}.cpp)
+    target_link_libraries(test_${PROJECT_NAME}_${TEST}
+      ${Boost_LIBRARIES}
+      gtest
+      ${catkin_LIBRARIES}
+      create
+    )
+  endforeach()
 
   add_rostest(tests/${PROJECT_NAME}.test)
 endif()

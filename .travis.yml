@@ -37,5 +37,5 @@ script:
   - catkin_make run_tests && catkin_test_results
   # Lint package files
   - sudo apt-get install python-catkin-lint
-  - catkin lint -W2 --strict --explain src/libcreate --ignore target_name_collision
+  - catkin lint -W2 --strict --explain src/libcreate
   - catkin_make roslint

@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CREATE_UTIL_H
 #define CREATE_UTIL_H
 
-#include <sys/time.h>
+#include <cmath>
 #include <limits>
 
 #define COUT(prefix, msg) (std::cout << prefix << msg << std::endl)
@@ -55,21 +55,8 @@ static const float EPS = 0.0001;
 
 inline float normalizeAngle(const float& angle)
 {
-  float a = angle;
-  while (a < -PI) a += TWO_PI;
-  while (a > PI) a -= TWO_PI;
-  return a;
-};
-
-typedef uint64_t timestamp_t;
-
-/** Get a timestamp for the current time in micro-seconds.
- */
-static timestamp_t getTimestamp()
-{
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  return now.tv_usec + (timestamp_t) now.tv_sec * 1000000;
+  return std::atan2(
+    std::sin(angle), std::cos(angle));
 }
 
 inline bool willFloatOverflow(const float a, const float b)

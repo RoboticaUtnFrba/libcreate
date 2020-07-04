@@ -65,8 +65,8 @@ TEST(SerialStreamTest, NumPackets)
   create::SerialStream serial_stream(data_ptr);
 
   // Not connected, so zero packets should have been received
-  EXPECT_EQ(serial_stream.getNumCorruptPackets(), 0);
-  EXPECT_EQ(serial_stream.getTotalPackets(), 0);
+  EXPECT_EQ(serial_stream.getNumCorruptPackets(), static_cast<uint64_t>(0));
+  EXPECT_EQ(serial_stream.getTotalPackets(), static_cast<uint64_t>(0));
 }
 
 TEST(SerialStreamTest, Send)

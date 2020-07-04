@@ -1,6 +1,6 @@
 /**
  * Copyright 2020
- * 
+ *
  */
 
 #include "create/create.h"
@@ -79,8 +79,8 @@ int main(int argc, char** argv)
 
     // Check for wheeldrop or cliffs
 
-    const bool is_wheeldrop = robot->isLeftWheel() ||
-                              robot->isRightWheel();
+    const bool is_wheeldrop = robot->isLeftWheeldrop() ||
+                              robot->isRightWheeldrop();
     const bool is_cliff = robot->isCliffLeft() ||
                           robot->isCliffFrontLeft() ||
                           robot->isCliffFrontRight() ||
