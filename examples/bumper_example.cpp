@@ -5,7 +5,7 @@
 
 #include <string>
 
-int main(int argc, char** argv)
+int main()
 {
   std::string port = "/dev/ttyUSB0";
   int baud = 115200;

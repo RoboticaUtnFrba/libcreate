@@ -1,6 +1,6 @@
 /**
  * Copyright 2020
- * 
+ *
  */
 #include <iostream>
 #include <string>
@@ -12,26 +12,48 @@ namespace create
 {
 
 Serial::Serial(boost::shared_ptr<Data> d) :
-  data(d),
+  signals(io, SIGINT, SIGTERM),
   port(io),
-  isReading(false),
   dataReady(false),
+  isReading(false),
+  data(d),
   corruptPackets(0),
   totalPackets(0)
-{
-}
+{ }
 
 Serial::~Serial()
 {
   disconnect();
 }
 
+void Serial::signalHandler(const boost::system::error_code& error, int signal_number)
+{
+  if (!error)
+  {
+    if (connected())
+    {
+      // Ensure not in Safe/Full modes
+      sendOpcode(OC_START);
+      // Stop OI
+      sendOpcode(OC_STOP);
+      exit(signal_number);
+    }
+  }
+}
+
 bool Serial::connect(const std::string& portName, const int& baud, boost::function<void()> cb)
 {
   port.open(portName);
   port.set_option(boost::asio::serial_port::baud_rate(baud));
+  port.set_option(boost::asio::serial_port::character_size(8));
+  port.set_option(boost::asio::serial_port::parity(
+          boost::asio::serial_port::parity::none));
+  port.set_option(boost::asio::serial_port::stop_bits(
+          boost::asio::serial_port::stop_bits::one));
   port.set_option(boost::asio::serial_port::flow_control(
           boost::asio::serial_port::flow_control::none));
+
+  signals.async_wait(boost::bind(&Serial::signalHandler, this, _1, _2));
 
   usleep(1000000);
 

@@ -54,6 +54,7 @@ class Serial : public boost::enable_shared_from_this<Serial>
 {
 protected:
   boost::asio::io_service io;
+  boost::asio::signal_set signals;
   boost::asio::serial_port port;
 
 private:
@@ -83,6 +84,7 @@ protected:
   virtual bool startSensorStream() = 0;
   virtual void processByte(uint8_t byteRead) = 0;
 
+  void signalHandler(const boost::system::error_code& error, int signal_number);
   // Notifies main thread that data is fresh and makes the user callback
   void notifyDataReady();
 

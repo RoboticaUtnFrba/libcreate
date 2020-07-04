@@ -34,6 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/shared_ptr.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <chrono>
 #include <string>
 #include <unistd.h>
 #include <vector>
@@ -83,7 +84,7 @@ private:
   float totalLeftDist;
   float totalRightDist;
   bool firstOnData;
-  util::timestamp_t prevOnDataTime;
+  std::chrono::time_point<std::chrono::system_clock> prevOnDataTime;
 
   Matrix poseCovar;
 
@@ -331,12 +332,12 @@ public:
   /**
    * \return true if left wheeldrop is detected, false otherwise.
    */
-  bool isLeftWheel() const;
+  bool isLeftWheeldrop() const;
 
   /**
    * \return true if right wheeldrop is detected, false otherwise.
    */
-  bool isRightWheel() const;
+  bool isRightWheeldrop() const;
 
   /**
    * \return true if left bumper is pressed, false otherwise.

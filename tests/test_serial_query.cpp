@@ -65,8 +65,8 @@ TEST(SerialQueryTest, NumPackets)
   create::SerialQuery serial_query(data_ptr);
 
   // Not connected, so zero packets should have been received
-  EXPECT_EQ(serial_query.getNumCorruptPackets(), 0);
-  EXPECT_EQ(serial_query.getTotalPackets(), 0);
+  EXPECT_EQ(serial_query.getNumCorruptPackets(), static_cast<uint64_t>(0));
+  EXPECT_EQ(serial_query.getTotalPackets(), static_cast<uint64_t>(0));
 }
 
 TEST(SerialQueryTest, Send)
