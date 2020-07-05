@@ -41,6 +41,8 @@ void Create::init()
   powerLEDIntensity = 0;
   prevTicksLeft = 0;
   prevTicksRight = 0;
+  leftWheelDist = 0.0;
+  rightWheelDist = 0.0;
   totalLeftDist = 0.0;
   totalRightDist = 0.0;
   firstOnData = true;
@@ -125,7 +127,7 @@ void Create::onData()
   // Get current time
   auto curTime = std::chrono::system_clock::now();
   float dt = static_cast<std::chrono::duration<float>>(curTime - prevOnDataTime).count();
-  float deltaDist, deltaX, deltaY, deltaYaw, leftWheelDist, rightWheelDist, wheelDistDiff;
+  float deltaDist, deltaX, deltaY, deltaYaw, wheelDistDiff;
 
   // Get cumulative ticks (wraps around at 65535)
   uint16_t totalTicksLeft = GET_DATA(ID_LEFT_ENC);
@@ -166,7 +168,7 @@ void Create::onData()
   }
   else
   {
-    float turnRadius = (model.getAxleLength() / 2.0) * (leftWheelDist + rightWheelDist) / wheelDistDiff;
+    float turnRadius = (model.getAxleLength() / 2.0) * deltaDist / wheelDistDiff;
     deltaX = turnRadius * (sin(pose.yaw + deltaYaw) - sin(pose.yaw));
     deltaY = -turnRadius * (cos(pose.yaw + deltaYaw) - cos(pose.yaw));
   }
@@ -176,14 +178,12 @@ void Create::onData()
 
   if (fabs(dt) > util::EPS)
   {
-    vel.x = deltaDist / dt;
-    vel.y = 0.0;
-    vel.yaw = deltaYaw / dt;
+    vel.x = (requestedLeftVel + requestedRightVel) / 2.0;
+    vel.yaw = (requestedRightVel - requestedLeftVel) / model.getAxleLength();
   }
   else
   {
     vel.x = 0.0;
-    vel.y = 0.0;
     vel.yaw = 0.0;
   }
 
@@ -1178,6 +1178,16 @@ bool Create::isMovingForward() const
     CERR("[create::Create] ", "Stasis sensor not supported!");
     return false;
   }
+}
+
+float Create::getLeftWheelCurrentDistance() const
+{
+  return leftWheelDist;
+}
+
+float Create::getRightWheelCurrentDistance() const
+{
+  return rightWheelDist;
 }
 
 float Create::getLeftWheelTotalDistance() const
