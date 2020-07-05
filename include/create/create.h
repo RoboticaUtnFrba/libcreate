@@ -81,6 +81,8 @@ private:
 
   uint32_t prevTicksLeft;
   uint32_t prevTicksRight;
+  float leftWheelDist;
+  float rightWheelDist;
   float totalLeftDist;
   float totalRightDist;
   bool firstOnData;
@@ -577,6 +579,18 @@ public:
    * \return true if Create is moving forward, false otherwise.
    */
   bool isMovingForward() const;
+
+  /**
+   * \brief Get the current angular distance the left wheel has moved.
+   * \return distance in meters.
+   */
+  float getLeftWheelCurrentDistance() const;
+
+  /**
+   * \brief Get the total angular distance the right wheel has moved.
+   * \return distance in meters.
+   */
+  float getRightWheelCurrentDistance() const;
 
   /**
    * \brief Get the total distance the left wheel has moved.
