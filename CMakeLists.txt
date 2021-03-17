@@ -3,6 +3,8 @@ project(libcreate)
 
 add_compile_options(-std=c++11 -Wall -Wextra -Werror -Wpedantic -DCMAKE_BUILD_TYPE=Release)
 
+set(BUILD_SHARED_LIBS ON)
+
 find_package(catkin REQUIRED COMPONENTS
   roslint
 )
@@ -68,7 +70,8 @@ install(TARGETS create
         DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(DIRECTORY include/create/
+# http://wiki.ros.org/catkin/CMakeLists.txt#Installing_header_files
+install(DIRECTORY include/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
