@@ -28,8 +28,8 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include "create/data.h"
-#include "create/serial_stream.h"
+#include "libcreate/data.h"
+#include "libcreate/serial_stream.h"
 
 #include "gtest/gtest.h"
 

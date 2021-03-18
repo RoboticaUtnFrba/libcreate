@@ -41,10 +41,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "create/data.h"
-#include "create/types.h"
-#include "create/util.h"
-#include "create/serial.h"
+#include "libcreate/data.h"
+#include "libcreate/types.h"
+#include "libcreate/util.h"
+#include "libcreate/serial.h"
 
 namespace create
 {

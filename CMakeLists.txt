@@ -3,8 +3,6 @@ project(libcreate)
 
 add_compile_options(-std=c++11 -Wall -Wextra -Werror -Wpedantic -DCMAKE_BUILD_TYPE=Release)
 
-set(BUILD_SHARED_LIBS ON)
-
 find_package(catkin REQUIRED COMPONENTS
   roslint
 )
@@ -14,7 +12,7 @@ find_package(Threads REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include tests
-  LIBRARIES create
+  LIBRARIES ${PROJECT_NAME}
 )
 
 ## Specify additional locations of header files
@@ -23,7 +21,7 @@ include_directories(
 )
 
 ## Declare cpp library
-add_library(create
+add_library(${PROJECT_NAME}
   src/create.cpp
   src/data.cpp
   src/packet.cpp
@@ -34,17 +32,15 @@ add_library(create
 )
 
 if(THREADS_HAVE_PTHREAD_ARG)
-  set_property(TARGET create PROPERTY COMPILE_OPTIONS "-pthread")
-  set_property(TARGET create PROPERTY INTERFACE_COMPILE_OPTIONS "-pthread")
+  set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_OPTIONS "-pthread")
+  set_property(TARGET ${PROJECT_NAME} PROPERTY INTERFACE_COMPILE_OPTIONS "-pthread")
 endif()
 
 if(CMAKE_THREAD_LIBS_INIT)
-  target_link_libraries(create "${CMAKE_THREAD_LIBS_INIT}")
+  target_link_libraries(${PROJECT_NAME} "${CMAKE_THREAD_LIBS_INIT}")
 endif()
 
-target_link_libraries(create
-  ${Boost_LIBRARIES}
-)
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
 ## Declare example executables
 set(EXAMPLES
@@ -55,23 +51,20 @@ set(EXAMPLES
 foreach(EXAMPLE ${EXAMPLES})
   add_executable(${PROJECT_NAME}_${EXAMPLE} examples/${EXAMPLE}.cpp)
   ## Specify libraries to link a library or executable target against
-  target_link_libraries(${PROJECT_NAME}_${EXAMPLE}
-    ${Boost_LIBRARIES}
-    create
-  )
-  install(TARGETS ${PROJECT_NAME}_${EXAMPLE}
-    DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  )
+  target_link_libraries(${PROJECT_NAME}_${EXAMPLE} ${Boost_LIBRARIES} ${PROJECT_NAME})
+  install(TARGETS ${PROJECT_NAME}_${EXAMPLE} DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 endforeach()
 
 ## Install
 
-install(TARGETS create
-        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+install(TARGETS ${PROJECT_NAME}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 
 # http://wiki.ros.org/catkin/CMakeLists.txt#Installing_header_files
-install(DIRECTORY include/
+install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
@@ -98,7 +91,7 @@ if(CATKIN_ENABLE_TESTING)
       ${Boost_LIBRARIES}
       gtest
       ${catkin_LIBRARIES}
-      create
+      ${PROJECT_NAME}
     )
   endforeach()
 
