@@ -68,8 +68,9 @@ install(TARGETS create
         DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-install(DIRECTORY include/create/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# http://wiki.ros.org/catkin/CMakeLists.txt#Installing_header_files
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
 )
 
 ###########
